@@ -564,25 +564,25 @@ function animateStatsCounters() {
  * Header slides down, time banner scales up, stat cards stagger in, and section header fades in.
  */
 function animatePageEntrance() {
+  // Selectors for animated entrance elements
+  const ENTRANCE_ELEMENTS_SELECTOR =
+    "header, .time-banner, .stat-card, .section-header";
+
   // Check for reduced motion preference
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     // Ensure elements are visible when reduced motion is preferred
-    document
-      .querySelectorAll("header, .time-banner, .stat-card, .section-header")
-      .forEach((el) => {
-        el.style.opacity = "1";
-      });
+    document.querySelectorAll(ENTRANCE_ELEMENTS_SELECTOR).forEach((el) => {
+      el.style.opacity = "1";
+    });
     return;
   }
 
   // Check if anime.js is available
   if (typeof anime === "undefined") {
     // Fallback: show elements immediately if anime.js is not loaded
-    document
-      .querySelectorAll("header, .time-banner, .stat-card, .section-header")
-      .forEach((el) => {
-        el.style.opacity = "1";
-      });
+    document.querySelectorAll(ENTRANCE_ELEMENTS_SELECTOR).forEach((el) => {
+      el.style.opacity = "1";
+    });
     return;
   }
 
@@ -660,13 +660,17 @@ document.addEventListener("DOMContentLoaded", () => {
   updateRealTime();
   setInterval(updateRealTime, 1000);
 
+  // Delay for stats counter animation to sync with stat card entrance
+  // Based on: stat cards start at 400ms + stagger delay for cards to be visible
+  const STATS_COUNTER_DELAY = 500;
+
   const initialRender = () => {
     updateStatistics();
 
     // Delay stats counters to sync with stat card entrance animation
     setTimeout(() => {
       animateStatsCounters();
-    }, 500);
+    }, STATS_COUNTER_DELAY);
 
     renderItems(items);
   };

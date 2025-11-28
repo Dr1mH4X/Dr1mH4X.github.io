@@ -436,18 +436,20 @@ function renderItems(itemsToRender) {
   });
 
   // Staggered slide-in animation for item cards
-
-  anime({
-    targets: ".item-card",
-
-    translateY: [20, 0],
-
-    opacity: [0, 1],
-
-    delay: anime.stagger(100),
-
-    easing: "easeOutQuad",
-  });
+  if (typeof anime !== "undefined") {
+    anime({
+      targets: ".item-card",
+      translateY: [20, 0],
+      opacity: [0, 1],
+      delay: anime.stagger(100),
+      easing: "easeOutQuad",
+    });
+  } else {
+    // Fallback: show item cards immediately if anime.js is not available
+    document.querySelectorAll(".item-card").forEach((el) => {
+      el.style.opacity = "1";
+    });
+  }
 }
 
 /**
@@ -500,6 +502,14 @@ function animateStatsCounters() {
   const totalItemsElement = document.getElementById("totalItems");
   const avgDailyCostElement = document.getElementById("avgDailyCost");
 
+  // Fallback: set final values immediately if anime.js is not available
+  if (typeof anime === "undefined") {
+    totalValueElement.textContent = `¥${globalTotalValue.toLocaleString()}`;
+    totalItemsElement.textContent = globalTotalItems;
+    avgDailyCostElement.textContent = `¥${globalAvgDailyCost.toFixed(2)}`;
+    return;
+  }
+
   // Reset text content to 0 before animation to ensure consistent animation start
   totalValueElement.textContent = "¥0";
   totalItemsElement.textContent = "0";
@@ -550,6 +560,72 @@ function animateStatsCounters() {
 }
 
 /**
+ * Animates the page entrance with a coordinated sequence of animations.
+ * Header slides down, time banner scales up, stat cards stagger in, and section header fades in.
+ */
+function animatePageEntrance() {
+  // Check for reduced motion preference
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    // Ensure elements are visible when reduced motion is preferred
+    document
+      .querySelectorAll("header, .time-banner, .stat-card, .section-header")
+      .forEach((el) => {
+        el.style.opacity = "1";
+      });
+    return;
+  }
+
+  // Check if anime.js is available
+  if (typeof anime === "undefined") {
+    // Fallback: show elements immediately if anime.js is not loaded
+    document
+      .querySelectorAll("header, .time-banner, .stat-card, .section-header")
+      .forEach((el) => {
+        el.style.opacity = "1";
+      });
+    return;
+  }
+
+  // Header animation: slide down and fade in
+  anime({
+    targets: "header",
+    translateY: [-50, 0],
+    opacity: [0, 1],
+    duration: 800,
+    easing: "easeOutExpo",
+  });
+
+  // Time banner animation: scale and fade in
+  anime({
+    targets: ".time-banner",
+    scale: [0.95, 1],
+    opacity: [0, 1],
+    duration: 800,
+    delay: 200,
+    easing: "easeOutExpo",
+  });
+
+  // Stat cards animation: staggered slide up and fade in
+  anime({
+    targets: ".stat-card",
+    translateY: [30, 0],
+    opacity: [0, 1],
+    duration: 800,
+    delay: anime.stagger(100, { start: 400 }),
+    easing: "easeOutExpo",
+  });
+
+  // Section header animation: fade in
+  anime({
+    targets: ".section-header",
+    opacity: [0, 1],
+    duration: 800,
+    delay: 600,
+    easing: "easeOutExpo",
+  });
+}
+
+/**
 
  * Handles the search functionality based on user input.
 
@@ -578,13 +654,19 @@ function handleSearch() {
 
 // Event Listeners
 document.addEventListener("DOMContentLoaded", () => {
+  // Animate page entrance elements
+  animatePageEntrance();
+
   updateRealTime();
   setInterval(updateRealTime, 1000);
 
   const initialRender = () => {
     updateStatistics();
 
-    animateStatsCounters();
+    // Delay stats counters to sync with stat card entrance animation
+    setTimeout(() => {
+      animateStatsCounters();
+    }, 500);
 
     renderItems(items);
   };

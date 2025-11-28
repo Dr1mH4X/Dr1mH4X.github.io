@@ -838,3 +838,21 @@ select:-webkit-autofill {
         animation: none !important;
     }
 }
+
+/* Initial state for page entrance animations (prevent flash) */
+header,
+.time-banner,
+.stat-card,
+.section-header {
+    opacity: 0;
+}
+
+/* When reduced motion is preferred, show elements immediately */
+@media (prefers-reduced-motion: reduce) {
+    header,
+    .time-banner,
+    .stat-card,
+    .section-header {
+        opacity: 1;
+    }
+}
